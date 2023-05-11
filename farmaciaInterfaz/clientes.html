@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Clientes</title>
+  <!-- Agregamos los estilos de Bootstrap -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <script src="js/jquery-3.6.4.min.js"></script>
+</head>
+<body>
+<div data-include="includes/navbar.html"></div>
+  <div class="container mt-4">
+    <h1 class="text-left mb-4">Clientes</h1>
+    <form class="crud-form">
+      <div class="form-row">
+        <div class="col-md-6">
+          <label for="nombre_cliente">Nombre(s)</label>
+          <input type="text" name="nombre_cliente" class="form-control" required>
+        </div>
+        <div class="col-md-6">
+          <label for="apellido_cliente">Apellido(s)</label>
+          <input type="text" name="apellido_cliente" class="form-control" required>
+        </div>  
+        <div class="col-md-6">
+          <label for="direccion">Dirección</label>
+          <input type="text" name="direccion" class="form-control" required>
+        </div>
+        <div class="col-md-6">
+        <label for="telefono">Télefono</label>
+          <input type="text" name="telefono" class="form-control" required>
+        </div>
+        <div class="col-md-6">
+          <label for="email">Email</label>
+          <input type="text" name="email" class="form-control" required>
+        </div>
+        <div class="col-md-6">
+          <label for="contrasena">Contraseña</label>
+          <input type="password" name="contrasena" class="form-control" required>
+          <br>
+        </div>
+        <input type="hidden" name="id">
+        <input type="submit" value="Guardar" class="btn btn-primary">
+      </div>
+    </form>
+    <br>
+    <table class="table table-striped" id="crud-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Nombre</th>
+          <th>Apellidos</th>
+          <th>Dirección</th>
+          <th>Télefono</th>
+          <th>Email</th>
+          <th>Contraseña</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+    <template id="crud-template">
+      <tr>
+        <td class="id"></td>
+        <td class="nombre_cliente"></td>
+        <td class="apellido_cliente"></td>
+        <td class="direccion"></td>
+        <td class="telefono"></td>
+        <td class="email"></td>
+        <td class="contrasena"></td>
+        <td>
+          <button type="button" id="edit" class="btn btn-sm btn-success edit">
+            Editar
+          </button>
+          <button type="button" id="delete" class="btn btn-sm btn-danger delete">
+            Eliminar
+          </button>
+        </td>
+      </tr>
+  </template>
+  </div>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+    $(function(){
+       $("div[data-include]").each(function(){
+       var file = $(this).data("include");
+       $(this).load(file);
+       });
+   });
+   const d = document,
+          $table = d.querySelector("#crud-table"),
+          $form = d.querySelector(".crud-form"),
+          $template = d.getElementById("crud-template").content,
+          $fragment = d.createDocumentFragment();
+
+          const getAll = async() =>{
+            try {
+                let res = await fetch("http://lalo24-001-site1.ftempurl.com/Api/Clientes/ObtenerClientes");
+                json = await res.json();
+                if(!res.ok)throw{status:res.status,statusText:res.statusText};
+                
+                console.log(json);
+                let contador=0;
+                json.forEach(el => {
+                    contador++;
+                    $template.querySelector(".id").textContent = contador;
+                    $template.querySelector(".nombre_cliente").textContent = el.nombre_cliente;
+                    $template.querySelector(".apellido_cliente").textContent = el.apellido_cliente;
+                    $template.querySelector(".direccion").textContent = el.direccion;
+                    $template.querySelector(".telefono").textContent = el.telefono;
+                    $template.querySelector(".email").textContent = el.email;
+
+                    $template.querySelector("#edit").dataset.id = el.idcliente;
+                    $template.querySelector("#edit").dataset.nombre_cliente = el.nombre_cliente;
+                    $template.querySelector("#edit").dataset.apellido_cliente = el.apellido_cliente;
+                    $template.querySelector("#edit").dataset.direccion = el.direccion;
+                    $template.querySelector("#edit").dataset.telefono = el.telefono;
+                    $template.querySelector("#edit").dataset.email = el.email;
+                    $template.querySelector("#edit").dataset.contrasena = el.contrasena;
+    
+
+                    $template.querySelector("#delete").dataset.id = el.idcliente;
+
+                    let $clone = d.importNode($template,true);
+                    $fragment.appendChild($clone); 
+                    
+                });
+                $table.querySelector("tbody").appendChild($fragment);
+            } catch (err) {
+                let message = err.statusText || "ocurrió un error";
+                $table.insertAdjacentHTML("afterend",`<p><b>Error ${err.status}:${message}</b></p>`);
+            }
+            let userRol = sessionStorage.getItem('rol');
+            if (userRol === 'Empleado') {
+                          let editButtons = document.querySelectorAll(".edit");
+                          let deleteButtons = document.querySelectorAll(".delete");
+
+                          editButtons.forEach((button) => {
+                            button.disabled = true;
+                          });
+
+                          deleteButtons.forEach((button) => {
+                            button.disabled = true;
+                          });
+            }
+        }
+        d.addEventListener("DOMContentLoaded",getAll);
+
+        d.addEventListener("submit",async e =>{
+            if(e.target === $form){
+              e.preventDefault();
+              if(!e.target.id.value){
+                  //metodo post
+                  try {
+                    let options = {
+                        method: "POST",
+                        headers:{
+                          "Content-type": "application/json;charset=UTF-8"
+                        },
+                        body:JSON.stringify({
+                            exito:0,
+                            mensaje:"",
+                            idrol:3,
+                            nombre_cliente:e.target.nombre_cliente.value,
+                            apellido_cliente:e.target.apellido_cliente.value,
+                            direccion:e.target.direccion.value,
+                            telefono:e.target.telefono.value,
+                            email:e.target.email.value,
+                            contrasena:e.target.contrasena.value
+                        })
+                    },
+                    res = await fetch("http://lalo24-001-site1.ftempurl.com/Api/Clientes/AgregarClientes",options),
+                    json = await res.json();
+                    console.log(json);
+                    console.log(res);
+                    if(!res.ok)throw{status:res.status,statusText:res.statusText};
+                    location.reload();
+                  } catch (err) {
+                    let message = err.statusText || "ocurrió un error";
+                    $table.insertAdjacentHTML("afterend",`<p><b>Error ${err.status}:${message}</b></p>`);
+                  }
+              }else{
+                  //metodo put
+                  try {
+                      let options = {
+                        method: "PUT",
+                        headers:{
+                            "Content-type":"application/json;charset=utf-8"
+                        },
+                        body:JSON.stringify({    
+                            exito:0,
+                            mensaje:"",
+                            idcliente:e.target.id.value,
+                            idrol:3,
+                            nombre_cliente:e.target.nombre_cliente.value,
+                            apellido_cliente:e.target.apellido_cliente.value,
+                            direccion:e.target.direccion.value,
+                            telefono:e.target.telefono.value,
+                            email:e.target.email.value,
+                            contrasena:e.target.contrasena.value
+                        })
+                    },
+                    res = await fetch(`http://lalo24-001-site1.ftempurl.com/Api/Clientes/ActualizarClientes?idcliente=${e.target.id.value}`,options),
+                    json = await res.json();
+                    if(!res.ok)throw{status:res.status,statusText:res.statusText};
+                    location.reload();
+                  } catch (err) {
+                    let message = err.statusText || "ocurrió un error";
+                    $table.insertAdjacentHTML("afterend",`<p><b>Error ${err.status}:${message}</b></p>`);
+                  }
+              }
+            }
+        });
+        d.addEventListener("click", async e =>{
+          if(e.target.matches("#edit")){
+            $form.id.value = e.target.dataset.id;
+            $form.nombre_cliente.value = e.target.dataset.nombre_cliente;
+            $form.apellido_cliente.value = e.target.dataset.apellido_cliente;
+            $form.direccion.value = e.target.dataset.direccion;
+            $form.telefono.value = e.target.dataset.telefono;
+            $form.email.value = e.target.dataset.email;
+            $form.contrasena.value = e.target.dataset.contrasena;
+          }
+          if(e.target.matches("#delete")){
+            let isDelete = confirm(`¿Estas seguro de eliminar el cliente seleccionado?`);
+            if(isDelete){
+                try {
+                    let options = {
+                        method: "DELETE",
+                        hearders:{
+                            "Content-Type":"application/json;charset=utf-8"
+                        }
+                    }
+                    res = await fetch(`http://lalo24-001-site1.ftempurl.com/Api/Clientes/EliminarClientes?idcliente=${e.target.dataset.id}`,options); 
+                    json = await res.json();
+                    if(!res.ok)throw{status:res.status,statusText:res.statusText};
+                    location.reload();
+                  } catch (err) {
+                    let message = err.statusText || "ocurrió un error";
+                    alert(`Error ${err.status}:${message}`);
+                  }
+              }
+            }
+          });
+</script>
+</body>
+</html>

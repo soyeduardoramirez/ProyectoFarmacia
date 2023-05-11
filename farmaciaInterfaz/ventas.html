@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Ventas</title>
+  <!-- Agregamos los estilos de Bootstrap -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <script src="js/jquery-3.6.4.min.js"></script>
+</head>
+<body>
+<div data-include="includes/navbar.html"></div>
+  <div class="container mt-4">
+    <h1 class="text-left mb-4">Ventas</h1>
+    <form class="crud-form">
+      <div class="form-row">
+        <div class="col-md-6">
+          <label for="idcliente">Nombre del Cliente</label>
+          <!-- <input type="text" name="idcliente" class="form-control" required> -->
+          <select name="idcliente" class="form-control" id="idcliente"> </select>
+        </div>
+        <div class="col-md-6">
+          <label for="idempleado">Nombre del Empleado</label>
+          <select name="idempleado" class="form-control" id="idempleado"> </select>
+        </div>
+        <div class="col-md-6"> 
+          <label for="idproducto">Producto</label>
+          <select name="idproducto" class="form-control" id="idproducto"></select>
+        </div>
+          <!-- 
+          <input type="text" name="idempleado" class="form-control" required> -->
+          <!-- 
+          <input type="text" name="idproducto" class="form-control" required> -->
+        <div class="col-md-6">
+          <label for="fecha">Fecha</label>
+          <input type="datetime-local" name="fecha" class="form-control" required>
+        </div>
+        <div class="col-md-6">
+          <label for="cantidad">Cantidad</label>
+          <input type="text" name="cantidad" class="form-control" required>
+        </div>
+        <div class="col-md-6">
+          <label for="subtotal">Subtotal</label>
+          <input type="text" name="subtotal" class="form-control" required>
+        </div>
+        <div class="col-md-6">
+          <label for="impuestos">Impuestos</label>
+          <input type="text" name="impuestos" class="form-control" required>
+        </div>
+        <div class="col-md-6">
+          <label for="total">Total</label>
+          <input type="text" name="total" class="form-control" required>
+          <br>
+        </div>
+          <input type="hidden" name="id">
+          <input type="submit" value="Guardar" class="btn btn-primary" >
+      </div>
+    </form>
+    <br>
+    <table class="table table-striped" id="crud-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Nombre del Empleado</th>
+          <th>Apellido del Empleado</th>
+          <th>Nombre del Cliente</th>
+          <th>Apellido del Cliente</th>
+          <th>Producto</th>
+          <th>Cantidad</th>
+          <th>Fecha</th>
+          <th>Subtotal</th>
+          <th>Impuestos</th>
+          <th>Total</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+    <template id="crud-template">
+      <tr>
+        <td class="id"></td>
+        <td class="nombre_empleado"></td>
+        <td class="apellido_empleado"></td>
+        <td class="nombre_cliente"></td>
+        <td class="apellido_cliente"></td>
+        <td class="nombre_producto"></td>
+        <td class="cantidad"></td>
+        <td class="fecha"></td>
+        <td class="subtotal"></td>
+        <td class="impuestos"></td>
+        <td class="total"></td>
+        <td>
+          <button type="button" id="edit" class="btn btn-sm btn-success edit">
+            Editar
+          </button>
+          <button type="button" id="delete" class="btn btn-sm btn-danger delete">
+            Eliminar
+          </button>
+        </td>
+      </tr>
+  </template>
+  </div>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+    $(function(){
+       $("div[data-include]").each(function(){
+       var file = $(this).data("include");
+       $(this).load(file);
+       });
+   });
+   const d = document,
+          $table = d.querySelector("#crud-table"),
+          $form = d.querySelector(".crud-form"),
+          $template = d.getElementById("crud-template").content,
+          $fragment = d.createDocumentFragment();
+
+          const getAll = async() =>{
+            try {
+                let res = await fetch("http://lalo24-001-site1.ftempurl.com/Api/Ventas/ObtenerVentas");
+                json = await res.json();
+                if(!res.ok)throw{status:res.status,statusText:res.statusText};
+                
+                console.log(json);
+                let contador=0;
+                json.forEach(el => {
+                    contador++;
+                    $template.querySelector(".id").textContent = contador;
+                    $template.querySelector(".nombre_empleado").textContent = el.nombre_empleado;
+                    $template.querySelector(".apellido_empleado").textContent = el.apellido_empleado;
+                    $template.querySelector(".nombre_cliente").textContent = el.nombre_cliente;
+                    $template.querySelector(".apellido_cliente").textContent = el.apellido_cliente
+                    $template.querySelector(".nombre_producto").textContent = el.nombre_producto;
+                    $template.querySelector(".fecha").textContent = el.fecha;
+                    $template.querySelector(".cantidad").textContent = el.cantidad;
+                    $template.querySelector(".subtotal").textContent = el.subtotal;
+                    $template.querySelector(".impuestos").textContent = el.impuestos;
+                    $template.querySelector(".total").textContent = el.total;
+
+                    $template.querySelector("#edit").dataset.id = el.idventa;
+                    $template.querySelector("#edit").dataset.idempleado = el.idempleado;
+                    $template.querySelector("#edit").dataset.idcliente = el.idcliente;
+                    $template.querySelector("#edit").dataset.idproducto = el.idproducto;
+                    $template.querySelector("#edit").dataset.fecha = el.fecha;
+                    $template.querySelector("#edit").dataset.cantidad = el.cantidad;
+                    $template.querySelector("#edit").dataset.subtotal = el.subtotal;
+                    $template.querySelector("#edit").dataset.impuestos = el.impuestos;
+                    $template.querySelector("#edit").dataset.total = el.total;
+
+                    $template.querySelector("#delete").dataset.id = el.idventa;
+
+                    let $clone = d.importNode($template,true);
+                    $fragment.appendChild($clone); 
+                    
+                });
+                $table.querySelector("tbody").appendChild($fragment);
+            } catch (err) {
+                let message = err.statusText || "ocurrió un error";
+                $table.insertAdjacentHTML("afterend",`<p><b>Error ${err.status}:${message}</b></p>`);
+            }
+            let userRol = sessionStorage.getItem('rol');
+            if (userRol === 'Empleado') {
+                          let editButtons = document.querySelectorAll(".edit");
+                          let deleteButtons = document.querySelectorAll(".delete");
+
+                          editButtons.forEach((button) => {
+                            button.disabled = true;
+                          });
+
+                          deleteButtons.forEach((button) => {
+                            button.disabled = true;
+                          });
+            }
+        } 
+        d.addEventListener("DOMContentLoaded",getAll);
+
+        d.addEventListener("submit",async e =>{
+            if(e.target === $form){
+              e.preventDefault();
+              if(!e.target.id.value){
+                  //metodo post
+                  try {
+                    let options = {
+                        method: "POST",
+                        headers:{
+                          "Content-type": "application/json;charset=UTF-8"
+                        },
+                        body:JSON.stringify({
+                            exito: 0,
+                            mensaje: "",
+                            idempleado: e.target.idempleado.value,
+                            idcliente: e.target.idcliente.value,
+                            idproducto: e.target.idproducto.value,
+                            cantidad: e.target.cantidad.value,
+                            fecha: "2023-05-09T16:49:01.346Z",
+                            subtotal: e.target.subtotal.value,
+                            impuestos: e.target.impuestos.value,
+                            total: e.target.total.value,
+                            nombre_empleado: "",
+                            apellido_empleado: "",
+                            nombre_cliente: "",
+                            apellido_cliente: "",
+                            nombre_producto: ""
+
+                        })
+                    },
+                    res = await fetch("http://lalo24-001-site1.ftempurl.com/Api/Ventas/AgregarVentas",options),
+                    json = await res.json();
+                    console.log(json);
+                    console.log(res);
+                    if(!res.ok)throw{status:res.status,statusText:res.statusText};
+                    location.reload();
+                  } catch (err) {
+                    let message = err.statusText || "ocurrió un error";
+                    $table.insertAdjacentHTML("afterend",`<p><b>Error ${err.status}:${message}</b></p>`);
+                  }
+              }else{
+                  //metodo put
+                  try {
+                      let options = {
+                        method: "PUT",
+                        headers:{
+                            "Content-type":"application/json;charset=utf-8"
+                        },
+                        body:JSON.stringify({    
+                            exito: 0,
+                            mensaje: "string",
+                            idventa: e.target.id.value,
+                            idempleado: e.target.idempleado.value,
+                            idcliente: e.target.idcliente.value,
+                            idproducto: e.target.idproducto.value,
+                            cantidad: e.target.cantidad.value,
+                            fecha: "2023-05-09T16:49:01.346Z",
+                            subtotal: e.target.subtotal.value,
+                            impuestos: e.target.impuestos.value,
+                            total: e.target.total.value,
+                            nombre_empleado: "",
+                            apellido_empleado: "",
+                            nombre_cliente: "",
+                            apellido_cliente: "",
+                            nombre_producto: ""
+                        })
+                    },
+                    res = await fetch(`http://lalo24-001-site1.ftempurl.com/Api/Ventas/ActualizarVentas?idventa=${e.target.id.value}`,options),
+                    json = await res.json();
+                    if(!res.ok)throw{status:res.status,statusText:res.statusText};
+                    location.reload();
+                  } catch (err) {
+                    let message = err.statusText || "ocurrió un error";
+                    $table.insertAdjacentHTML("afterend",`<p><b>Error ${err.status}:${message}</b></p>`);
+                  }
+              }
+            }
+        });
+        d.addEventListener("click", async e =>{
+          if(e.target.matches("#edit")){
+            $form.id.value = e.target.dataset.id;
+            $form.idempleado.value = e.target.dataset.idempleado;
+            $form.idcliente.value = e.target.dataset.idcliente;
+            $form.idproducto.value = e.target.dataset.idproducto;
+            $form.fecha.value = e.target.dataset.fecha;
+            $form.cantidad.value = e.target.dataset.cantidad;
+            $form.impuestos.value = e.target.dataset.impuestos;
+            $form.subtotal.value = e.target.dataset.subtotal;
+            $form.total.value = e.target.dataset.total;
+          }
+          if(e.target.matches("#delete")){
+            let isDelete = confirm(`¿Estas seguro de eliminar la venta seleccionada?`);
+            if(isDelete){
+                try {
+                    let options = {
+                        method: "DELETE",
+                        hearders:{
+                            "Content-Type":"application/json;charset=utf-8"
+                        }
+                    }
+                    res = await fetch(`http://lalo24-001-site1.ftempurl.com/Api/Ventas/EliminarVentas?idVenta=${e.target.dataset.id}`,options); 
+                    json = await res.json();
+                    if(!res.ok)throw{status:res.status,statusText:res.statusText};
+                    location.reload();
+                  } catch (err) {
+                    let message = err.statusText || "ocurrió un error";
+                    alert(`Error ${err.status}:${message}`);
+                  }
+              }
+            }
+          });
+          const producto= document.getElementById("idproducto");
+          fetch('http://lalo24-001-site1.ftempurl.com/Api/ProductosConsulta/ObtenerProductos')
+            .then(response => response.json())
+            .then(data => {
+                data.forEach(opcion => {
+                    const option = document.createElement('option');
+                    option.text = opcion.nombre_producto;
+                    option.value = opcion.idproducto; 
+                    producto.appendChild(option);
+                  });
+                
+            })
+          .catch(error => console.error(error));
+
+          const cliente= document.getElementById("idcliente");
+          fetch('http://lalo24-001-site1.ftempurl.com/Api/Clientes/ObtenerClientes')
+            .then(response => response.json())
+            .then(data => {
+                data.forEach(opcion => {
+                    const option = document.createElement('option');
+                    option.text = opcion.nombre_cliente+' '+opcion.apellido_cliente;
+                    option.value = opcion.idcliente; 
+                    cliente.appendChild(option);
+                  });
+                
+            })
+          .catch(error => console.error(error));
+
+          const empleado = document.getElementById("idempleado");
+          fetch('http://lalo24-001-site1.ftempurl.com/Api/Empleados/ObtenerEmpleados')
+            .then(response => response.json())
+            .then(data => {
+                data.forEach(opcion => {
+                    const option = document.createElement('option');
+                    option.text = opcion.nombre_empleado+' '+opcion.apellido_empleado;
+                    option.value = opcion.idempleado; 
+                    empleado.appendChild(option);
+                  });
+                
+            })
+          .catch(error => console.error(error));
+</script>
+</body>
+</html>

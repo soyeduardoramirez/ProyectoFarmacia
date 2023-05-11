@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+	<meta charset="UTF-8">
+	<title>Farmacia JEYI</title>
+	<!-- Enlazar estilos de Bootstrap -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+
+</head>
+<body>
+	<div class="container my-5">
+		<div class="row justify-content-center">
+			<div class="col-md-6">
+				<div class="card">
+					<div class="card-header bg-primary text-white">
+						<h4 class="text-center">Registro de Cliente</h4>
+					</div>
+					<div class="card-body">
+						<form class="crud-form">
+							<div class="form-row">
+								<div class="form-group col-md-6">
+									<label for="nombre">Nombre(s)</label>
+									<input type="text" class="form-control" name="nombre_cliente" required>
+								</div>
+								<div class="form-group col-md-6">
+									<label for="apellido">Apellido(s)</label>
+									<input type="text" class="form-control" name="apellido_cliente" required>
+								</div>
+							</div>
+							<div class="form-group">
+								<label for="direccion">Dirección</label>
+								<input type="text" class="form-control" name="direccion" required>
+							</div>
+							<div class="form-group">
+								<label for="email">Correo electrónico</label>
+								<input type="email" class="form-control" name="email" required>
+							</div>
+							<div class="form-row">
+								<div class="form-group col-md-6">
+									<label for="contrasena">Contraseña</label>
+									<input type="password" class="form-control" name="contrasena" required>
+								</div>
+								<div class="form-group col-md-6">
+									<label for="telefono">Télefono</label>
+									<input type="text" class="form-control" name="telefono" required>
+								</div>
+							</div>
+							<input type="hidden" name="id">
+							<div class="form-group text-center">
+								<button type="submit" class="btn btn-primary btn-block">Registrarse</button>
+							</div>
+						</form>
+						<hr>
+						<p class="text-center">¿Ya tienes una cuenta? <a href="index.html">Inicia sesión aquí</a></p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Enlazar scripts de Bootstrap -->
+	<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+	<script>
+		 const d = document,
+          $form = d.querySelector(".crud-form")
+		  d.addEventListener("submit",async e =>{
+            if(e.target === $form){
+              e.preventDefault();
+              if(!e.target.id.value){
+                  //metodo post
+                  try {
+                    let options = {
+                        method: "POST",
+                        headers:{
+                          "Content-type": "application/json;charset=UTF-8"
+                        },
+                        body:JSON.stringify({
+                            exito:0,
+                            mensaje:"",
+                            nombre_cliente:e.target.nombre_cliente.value,
+                            apellido_cliente:e.target.apellido_cliente.value,
+                            direccion:e.target.direccion.value,
+                            telefono:e.target.telefono.value,
+                            email:e.target.email.value,
+                            idrol:3,
+                            contrasena:e.target.contrasena.value
+                        })
+                    },
+                    res = await fetch("http://lalo24-001-site1.ftempurl.com/Api/Clientes/AgregarClientes",options),
+                    json = await res.json();
+                    if(!res.ok)throw{status:res.status,statusText:res.statusText};
+					else{
+						alert("Registro exitoso");
+					}
+                    location.reload();
+                  } catch (err) {
+                    let message = err.statusText || "ocurrió un error";
+                    $form.insertAdjacentHTML("afterend",`<p><b>Error ${err.status}:${message}</b></p>`);
+                  }
+              }
+			}
+		});
+	</script>
+</body>
+</html>

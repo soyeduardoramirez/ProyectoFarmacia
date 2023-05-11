@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Productos</title>
+  <!-- Agregamos los estilos de Bootstrap -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <script src="js/jquery-3.6.4.min.js"></script>
+</head>
+<body>
+<div data-include="includes/navbar.html"></div>
+  <div class="container mt-4">
+    <h1 class="text-left mb-4">Productos</h1>
+    <form class="crud-form">
+      <div class="form-row">
+        <div class="col-md-6">
+          <label for="nombre_producto">Nombre</label>
+          <input type="text" name="nombre_producto" class="form-control" required>
+        </div>
+        <div class="col-md-6">
+          <label for="idcategoria">Categoria</label>
+          <!-- <input type="text" name="idcategoria" class="form-control" required> -->
+          <select name="idcategoria" class="form-control" id="idcategoria"></select>
+        </div> 
+        <div class="col-md-6">  
+          <label for="idmarca">Marca</label>
+          <!-- <input type="text" name="idmarca" class="form-control" required> -->
+          <select name="idmarca" class="form-control" id="idmarca"></select>       
+        </div>
+        <div class="col-md-6">
+          <label for="precio">Precio</label>
+          <input type="text" name="precio" class="form-control" required>
+        </div>
+        <div class="col-md-6">
+          <label for="imagen">Url de Imagen</label>
+          <input type="text" name="imagen" class="form-control" required>
+          <br>
+        </div>
+        <div class="col-md-6"></div>
+        <input type="hidden" name="id">
+        <input type="submit" value="Guardar" class="btn btn-primary" >
+      </div>
+    </form>
+    <br>
+    <table class="table table-striped" id="crud-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Nombre</th>
+          <th>Categoria</th>
+          <th>Marca</th>
+          <th>Precio</th>
+          <th>Url de Imagen</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+    <template id="crud-template">
+      <tr>
+        <td class="id"></td>
+        <td class="nombre_producto"></td>
+        <td class="idcategoria"></td>
+        <td class="idmarca"></td>
+        <td class="precio"></td>
+        <td class="imagen"></td>
+        <td>
+          <button type="button" id="edit" class="btn btn-sm btn-success edit">
+            Editar
+          </button>
+          <button type="button" id="delete" class="btn btn-sm btn-danger delete">
+            Eliminar
+          </button>
+        </td>
+      </tr>
+  </template>
+  </div>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+    $(function(){
+       $("div[data-include]").each(function(){
+       var file = $(this).data("include");
+       $(this).load(file);
+       });
+   });
+   const d = document,
+          $table = d.querySelector("#crud-table"),
+          $form = d.querySelector(".crud-form"),
+          $template = d.getElementById("crud-template").content,
+          $fragment = d.createDocumentFragment();
+
+          const getAll = async() =>{
+            try {
+                let res = await fetch("http://lalo24-001-site1.ftempurl.com/Api/ProductosConsulta/ObtenerProductos");
+                json = await res.json();
+                if(!res.ok)throw{status:res.status,statusText:res.statusText};
+                
+                console.log(json);
+                let contador=0;
+                json.forEach(el => {
+                    contador++;
+                    $template.querySelector(".id").textContent = contador;
+                    $template.querySelector(".nombre_producto").textContent = el.nombre_producto;
+                    $template.querySelector(".idcategoria").textContent = el.nombrecategoria;
+                    $template.querySelector(".idmarca").textContent = el.nombremarca;
+                    $template.querySelector(".precio").textContent = '$'+el.precio;
+                    $template.querySelector(".imagen").textContent = el.imagen;
+    
+                    $template.querySelector("#edit").dataset.id = el.idproducto;
+                    $template.querySelector("#edit").dataset.nombre_producto = el.nombre_producto;
+                    $template.querySelector("#edit").dataset.idcategoria = el.idcategoria;
+                    $template.querySelector("#edit").dataset.idmarca = el.idmarca;
+                    $template.querySelector("#edit").dataset.precio = el.precio;
+                    $template.querySelector("#edit").dataset.imagen = el.imagen;
+
+                    $template.querySelector("#delete").dataset.id = el.idproducto;
+
+                    let $clone = d.importNode($template,true);
+                    $fragment.appendChild($clone); 
+                    
+                });
+                $table.querySelector("tbody").appendChild($fragment);
+            } catch (err) {
+                let message = err.statusText || "ocurrió un error";
+                $table.insertAdjacentHTML("afterend",`<p><b>Error ${err.status}:${message}</b></p>`);
+            }
+            let userRol = sessionStorage.getItem('rol');
+            if (userRol === 'Empleado') {
+                          let editButtons = document.querySelectorAll(".edit");
+                          let deleteButtons = document.querySelectorAll(".delete");
+
+                          editButtons.forEach((button) => {
+                            button.disabled = true;
+                          });
+
+                          deleteButtons.forEach((button) => {
+                            button.disabled = true;
+                          });
+            }
+        }
+        d.addEventListener("DOMContentLoaded",getAll);
+
+        d.addEventListener("submit",async e =>{
+            if(e.target === $form){
+              e.preventDefault();
+              if(!e.target.id.value){
+                  //metodo post
+                  try {
+                    let options = {
+                        method: "POST",
+                        headers:{
+                          "Content-type": "application/json;charset=UTF-8"
+                        },
+                        body:JSON.stringify({
+                            exito:0,
+                            mensaje:"",
+                            nombre_producto:e.target.nombre_producto.value,
+                            idcategoria:e.target.idcategoria.value,
+                            idmarca:e.target.idmarca.value,
+                            precio:e.target.precio.value,
+                            imagen:e.target.imagen.value
+                            // nombre_producto:"Test",
+                            // idcategoria:20,
+                            // idmarca:3,
+                            // precio:32,
+                            // imagen:"test"
+                        })
+                    },
+                    res = await fetch("http://lalo24-001-site1.ftempurl.com/Api/Productos/AgregarProductos",options),
+                    json = await res.json();
+                    if(!res.ok)throw{status:res.status,statusText:res.statusText};
+                    location.reload();
+                  } catch (err) {
+                    let message = err.statusText || "ocurrió un error";
+                    $table.insertAdjacentHTML("afterend",`<p><b>Error ${err.status}:${message}</b></p>`);
+                  }
+              }else{
+                  //metodo put
+                  try {
+                      let options = {
+                        method: "PUT",
+                        headers:{
+                            "Content-type":"application/json;charset=utf-8"
+                        },
+                        body:JSON.stringify({    
+                            exito:0,
+                            mensaje:"",
+                            idproducto:e.target.id.value,
+                            nombre_producto:e.target.nombre_producto.value,
+                            idcategoria:e.target.idcategoria.value,
+                            idmarca:e.target.idmarca.value,
+                            precio:e.target.precio.value,
+                            imagen:e.target.imagen.value
+                        })
+                    },
+                    res = await fetch(`http://lalo24-001-site1.ftempurl.com/Api/Productos/ActualizarProductos?idproducto=${e.target.id.value}`,options),
+                    json = await res.json();
+                    if(!res.ok)throw{status:res.status,statusText:res.statusText};
+                    location.reload();
+                  } catch (err) {
+                    let message = err.statusText || "ocurrió un error";
+                    $table.insertAdjacentHTML("afterend",`<p><b>Error ${err.status}:${message}</b></p>`);
+                  }
+              }
+            }
+        });
+        d.addEventListener("click", async e =>{
+          if(e.target.matches("#edit")){
+            $form.id.value = e.target.dataset.id;
+            $form.nombre_producto.value = e.target.dataset.nombre_producto;
+            $form.idcategoria.value = e.target.dataset.idcategoria;
+            $form.idmarca.value = e.target.dataset.idmarca;
+            $form.precio.value = e.target.dataset.precio;
+            $form.imagen.value = e.target.dataset.imagen;
+          }
+          if(e.target.matches("#delete")){
+            let isDelete = confirm(`¿Estas seguro de eliminar el producto seleccionado?`);
+            if(isDelete){
+                try {
+                    let options = {
+                        method: "DELETE",
+                        hearders:{
+                            "Content-Type":"application/json;charset=utf-8"
+                        }
+                    }
+                    res = await fetch(`http://lalo24-001-site1.ftempurl.com/Api/Productos/EliminarProductos?idproducto=${e.target.dataset.id}`,options); 
+                    json = await res.json();
+                    if(!res.ok)throw{status:res.status,statusText:res.statusText};
+                    location.reload();
+                  } catch (err) {
+                    let message = err.statusText || "ocurrió un error";
+                    alert(`Error ${err.status}:${message}`);
+                  }
+              }
+            }
+          });
+
+          const marca = document.getElementById("idmarca");
+          fetch('http://lalo24-001-site1.ftempurl.com/Api/Marcas/ObtenerMarcas')
+            .then(response => response.json())
+            .then(data => {
+                data.forEach(opcion => {
+                    const option = document.createElement('option');
+                    option.text = opcion.nombre_marca;
+                    option.value = opcion.id_marca; 
+                    marca.appendChild(option);
+                  });
+                
+            })
+            .catch(error => console.error(error));
+
+          const categoria = document.getElementById("idcategoria");
+          fetch('http://lalo24-001-site1.ftempurl.com/Api/Categorias/ObtenerCategorias')
+            .then(response => response.json())
+            .then(data => {
+                data.forEach(opcion => {
+                    const option = document.createElement('option');
+                    option.text = opcion.nombre_categoria;
+                    option.value = opcion.idcategoria; 
+                    categoria.appendChild(option);
+                  });
+                
+            })
+          .catch(error => console.error(error));
+</script>
+</body>
+</html>

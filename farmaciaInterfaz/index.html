@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+	<meta charset="UTF-8">
+	<title>Farmacia JEYI</title>
+	<!-- Enlazar estilos de Bootstrap -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+	<!-- Enlazar hoja de estilos personalizada -->
+	
+</head>
+<body>
+	<div class="container my-5">
+		<div class="row justify-content-center">
+			<div class="col-md-6">
+				<div class="card">
+					<div class="card-header bg-primary text-white">
+						<h4 class="text-center">Inicio de Sesión</h4>
+					</div>
+					<div class="card-body">
+						<form>
+							<div class="form-group">
+								<label for="email">Correo electrónico</label>
+								<input type="text" class="form-control" id="user" name="email" required>
+							</div>
+							<div class="form-group">
+								<label for="password">Contraseña</label>
+								<input type="password" class="form-control" id="password" name="password" required>
+							</div>
+							<div class="form-group text-center">
+								<button type="submit"  onclick="doLogin()" class="btn btn-primary btn-block">Iniciar sesión</button>
+							</div>
+						</form>
+						<hr>
+						<p class="text-center">¿No tienes una cuenta? <a href="registro.html">Regístrate aquí</a></p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Enlazar scripts de Bootstrap -->
+	<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+
+	<script>
+
+	document.addEventListener("submit",async e=>{
+		const email = document.getElementById('user').value;
+		const password = document.getElementById('password').value;	
+		await fetch('http://lalo24-001-site1.ftempurl.com/Api/Login/Login', {
+		method: 'POST',
+		body: JSON.stringify({ email: email, contrasena: password, rol:'',id:0 }),
+		headers: {
+			'Content-Type': 'application/json'
+		}
+		})
+		.then(response => {
+			if (response.ok) {
+			return response.json();
+			} else {
+			throw new Error('Inicio de sesión fallido');
+			}
+		})
+		.then(data => {
+		let userData = data[0]; 
+		sessionStorage.setItem('email',userData.email);
+		sessionStorage.setItem('rol',userData.rol);
+		sessionStorage.setItem('id',userData.id);
+		   if(userData.rol=='Cliente'){
+			window.location.href='main.html'
+		   }else{
+			window.location.href='categorias.html'
+		   }
+		})
+		.catch(error => {
+			console.error(error);
+		});
+		}
+	);
+	// const permiso = sessionStorage.getItem('rol');
+	// // console.log(permiso);
+	function ocultarEnlace() {
+		history.replaceState(null, null, window.location.pathname);
+	}
+	window.onload = function() {
+		ocultarEnlace();
+	}
+	ocultarEnlace();
+</script>
+</body>
+
+</html>

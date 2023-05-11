@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+	<meta charset="UTF-8">
+	<title>Farmacia JEYI</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+</head>
+<body>
+	<nav class="navbar navbar-expand-lg navbar-light bg-light">
+		<i class="fa-solid fa-hospital" style="color: #000000;"></i><a class="navbar-brand" href="#"> Farmacia JEYI</a>
+		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+		  <span class="navbar-toggler-icon"></span>
+		</button>
+	  
+		<div class="collapse navbar-collapse" id="navbarNav">
+		  <ul class="navbar-nav ml-auto">
+			<li class="nav-item">
+			  <a class="nav-link" href="main.html">Productos</a>
+			</li>
+			<li class="nav-item">
+				<button type="button" class="btn btn-custom" id="logout">Cerrar sesión</button>
+			</li>
+		  </ul>
+		</div>
+	  </nav>
+	  <div class="banner-container">
+		<!-- Aquí irá el contenido de tu banner -->
+	  </div>
+	<!-- Sección de compras -->
+	<section class="py-5">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-8">
+					<h2>Productos Disponibles</h2>
+					<hr>
+					<div class="row" id="cards-container">
+						<!-- Las cards se agregarán aquí -->
+					</div>
+                </div>
+                <div class="col-md-4" id="CarritoTabla">
+                    <h2>Detalles</h2>
+                    <hr>
+					<label for="cantidad">Cantidad</label>
+					<input type="text" class="form-control" name="cantidad" id="productoCantidad" value="1">
+					<br>
+					<label for="impuesto">Impuesto(%)</label>
+					<input type="text" class="form-control" name="impuesto" value="16" readonly>
+                </div>
+            </div>
+        </div> 
+    </section>
+    <footer class="bg-light py-3">
+		<div class="container">
+		  <div class="row">
+			<div class="col-md-4">
+			  <h4>Nuestra farmacia</h4>
+			  <p>Somos una farmacia comprometida con la salud y el bienestar de nuestros clientes. Ofrecemos una amplia variedad de productos y servicios para satisfacer todas sus necesidades de salud.</p>
+			</div>
+			<div class="col-md-4">
+			  <h4>Contacto</h4>
+			  <ul class="list-unstyled">
+				<li><i class="fas fa-map-marker-alt"></i> Dirección: Calle 123, Chiapas, México</li>
+				<li><i class="fas fa-phone"></i> Teléfono: 551-663-2588</li>
+				<li><i class="fas fa-envelope"></i> Correo electrónico: jeyi@nuestrafarmacia.com</li>
+			  </ul>
+			</div>
+			<div class="col-md-4">
+			  <h4>Síguenos en redes sociales</h4>
+			  <ul class="list-inline">
+				<li class="list-inline-item"><a href="#"><i class="fab fa-facebook-f"></i>Facebook</a></li>
+				<li class="list-inline-item"><a href="#"><i class="fab fa-twitter"></i>Twitter</a></li>
+				<li class="list-inline-item"><a href="#"><i class="fab fa-instagram"></i>Instagram</a></li>
+			  </ul>
+			</div>
+		  </div>
+		  <hr>
+		  <p class="text-center">&copy; 2023 Nuestra Farmacia. Todos los derechos reservados.</p>
+		</div>
+	  </footer>
+    <!-- Enlazar scripts de Bootstrap -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+	<script src="https://kit.fontawesome.com/5e01cda2dd.js" crossorigin="anonymous"></script>
+	<script>
+		fetch('http://lalo24-001-site1.ftempurl.com/Api/ProductosConsulta/ObtenerProductos')     
+        .then(response => response.json())
+        .then(data => {
+    
+    	let cardsContainer = document.getElementById("cards-container");
+		let tablaCarrito = document.getElementById("CarritoTabla");
+			data.forEach(producto => {
+				// Crear el div contenedor de la tarjeta
+				var card = document.createElement("div");
+				card.classList.add("col-lg-4", "col-md-6", "mb-4");
+
+				// Crear el elemento imagen de la tarjeta
+				var imagen = document.createElement("img");
+				imagen.classList.add("card-img-top");
+				imagen.src = producto.imagen;
+				imagen.height = "150";
+				imagen.alt = producto.nombre;
+
+				// Crear el div contenedor del cuerpo de la tarjeta
+				var cardBody = document.createElement("div");
+				cardBody.classList.add("card-body");
+
+				// Crear el elemento título de la tarjeta
+				var titulo = document.createElement("h5");
+				titulo.classList.add("card-title");
+				titulo.textContent = producto.nombre_producto;
+
+				// Crear el elemento texto de precio de la tarjeta
+				var precio = document.createElement("p");
+				precio.classList.add("card-text");
+				precio.textContent = '$' + producto.precio;
+
+				// Crear el elemento texto de categoría de la tarjeta
+				var categoria = document.createElement("p");
+				categoria.classList.add("card-text");
+				categoria.textContent = 'Categoria: ' + producto.nombrecategoria;
+
+				// Crear el elemento texto de marca de la tarjeta
+				var marca = document.createElement("p");
+				marca.classList.add("card-text");
+				marca.textContent = 'Marca: ' + producto.nombremarca;
+
+				// var cantidad = document.createElement("input");
+				// cantidad.classList.add("form-control");
+				// Crear el botón de agregar al carrito de la tarjeta
+				var btnAgregar = document.createElement("input");
+				btnAgregar.setAttribute("type", "button");
+				btnAgregar.setAttribute("value", "Comprar");
+				btnAgregar.classList.add("btn", "btn-custom");
+				btnAgregar.addEventListener('click', () => comprar(producto.idproducto,producto.precio));
+				// Agregar los elementos a sus contenedores correspondientes
+				cardBody.appendChild(titulo);
+				cardBody.appendChild(precio);
+				cardBody.appendChild(categoria);
+				cardBody.appendChild(marca);
+				cardBody.appendChild(btnAgregar);
+
+				card.appendChild(imagen);
+				card.appendChild(cardBody);
+
+				// Agregar la tarjeta completa al contenedor de tarjetas
+				cardsContainer.appendChild(card);
+			});
+		});
+		async function comprar(idproducto,precio) {
+			const price = document.getElementById('productoCantidad').value;
+			let subtotalPro = price * precio;
+			let totalConIva = subtotalPro + (subtotalPro * 0.16)
+
+			let fechaActual = new Date();
+			let fechaAsString = fechaActual.toISOString();
+
+			let idUser = sessionStorage.getItem('id');
+			try {
+                    let options = {
+                        method: "POST",
+                        headers:{
+                          "Content-type": "application/json;charset=UTF-8"
+                        },
+                        body:JSON.stringify({
+                            exito: 0,
+                            mensaje: "",
+                            idempleado: 6,
+                            idcliente: idUser,
+                            idproducto: idproducto,
+                            cantidad: price,
+                            fecha: fechaAsString,
+                            subtotal: subtotalPro,
+                            impuestos: 16,
+                            total: totalConIva,
+                            nombre_empleado: "",
+                            apellido_empleado: "",
+                            nombre_cliente: "",
+                            apellido_cliente: "",
+                            nombre_producto: ""
+                        })
+                    },
+					res = await fetch("http://lalo24-001-site1.ftempurl.com/Api/Ventas/AgregarVentas",options),
+                    json = await res.json();
+                    if(!res.ok)throw{status:res.status,statusText:res.statusText};
+					else{
+						alert("Compra realizada");
+					}
+				} catch (err) {
+                    let message = err.statusText || "ocurrió un error";
+                    console.log(message);
+                }
+		}
+		document.getElementById("logout").addEventListener("click", function() {
+			sessionStorage.removeItem('email');
+			sessionStorage.removeItem('rol');
+			sessionStorage.removeItem('id');
+			document.cookie = "";
+			window.location.href = 'index.html';
+		});
+	</script>
+	<style>
+		.banner-container {
+			width: 100%;
+  			height: 60vh; 
+			background-image: url('banner-farmacia-03.jpg');
+			background-size: cover;
+			background-position: center; 
+			background-repeat: no-repeat; 
+			}
+			.btn-custom {
+				background-color:    #268f70  ; 
+				color: white;
+			}
+			
+	</style>
+</body>
+</html>    
